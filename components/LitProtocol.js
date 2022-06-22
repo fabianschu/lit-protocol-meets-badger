@@ -46,7 +46,9 @@ const LitProtocol = () => {
         ).
         <p>
           On the deployed Badger instance anyone can mint or burn tokens, so it
-          can be used for testing the encryption scheme.
+          can be used for testing the decryption scheme. Only if you hold one of
+          the above-mentioned tokenns with the connected wallet will you be able
+          to decrypt an encrypted message.
         </p>
       </p>
       <div>
