@@ -1,13 +1,13 @@
 import LitJsSdk from "lit-js-sdk";
+import { address } from "../contracts/badger";
 
 const chain = "rinkeby";
 export const monetaryDelegateBadgeId = 1;
 export const vetoDelegateBadgeId = 2;
-export const badgerAddress = "0xDfF197357d7239Cc1073ACbe34c24152Eb7aCa37";
 
 const accessControlConditions = [
   {
-    contractAddress: badgerAddress,
+    contractAddress: address,
     standardContractType: "ERC1155",
     chain,
     method: "balanceOfBatch",

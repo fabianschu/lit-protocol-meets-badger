@@ -2,6 +2,7 @@ import { Web3Context } from "../context/Web3Context";
 import LitProtocol from "../components/LitProtocol";
 import Header from "../components/Header";
 import Balances from "../components/Balances";
+import Mint from "../components/Mint";
 import { useEffect, useContext } from "react";
 
 export const Home = () => {
@@ -61,6 +62,7 @@ export const Home = () => {
       <main>
         <Header />
         <Balances />
+        <Mint />
         <LitProtocol />
       </main>
     </div>
