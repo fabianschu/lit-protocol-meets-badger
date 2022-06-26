@@ -5,8 +5,8 @@ import {
   decrypt,
   monetaryDelegateBadgeId,
   vetoDelegateBadgeId,
-  badgerAddress,
 } from "../services/litProtocol";
+import badgerContract from "../contracts/badger";
 
 const LitProtocol = () => {
   const [clearText, setClearText] = useState("");
@@ -41,20 +41,26 @@ const LitProtocol = () => {
     <div>
       <h1>Lit Protocol</h1>
       <p>
-        Encryption via Lit Protocol. Decryption is only possible if the
+        Encryption via Lit Protocol. decrypting messages is only possible if the
         connected wallet holds either an ERC1155 token with id=
         {monetaryDelegateBadgeId} or id={vetoDelegateBadgeId} on the Badger
         contract (
         <a href="https://rinkeby.etherscan.io/address/0xDfF197357d7239Cc1073ACbe34c24152Eb7aCa37#code">
-          0xDfF197357d7239Cc1073ACbe34c24152Eb7aCa37
+          {badgerContract.address}
         </a>
-        ).
-        <p>
-          On the deployed Badger instance anyone can mint or burn tokens, so it
-          can be used for testing the decryption scheme. Only if you hold one of
-          the above-mentioned tokenns with the connected wallet will you be able
-          to decrypt an encrypted message.
-        </p>
+        ), or in the minting section above.
+      </p>
+      <p>
+        <strong>Test instructions:</strong>
+      </p>
+      <p>1. Mint token with id 1 or 2</p>
+      <p>
+        2. Encrypt a string (or multiple by entering and submitting several
+        strings)
+      </p>
+      <p>3. Click Decrypt and it will show all encrypted strings</p>
+      <p>
+        4. Switch to a wallet without a token and decrypting will throw an error
       </p>
       <div>
         <h2>Encrypt:</h2>
