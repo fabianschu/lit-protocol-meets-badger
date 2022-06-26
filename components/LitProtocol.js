@@ -10,8 +10,8 @@ import {
 
 const LitProtocol = () => {
   const [clearText, setClearText] = useState("");
-  const [decrypted, setDecrypted] = useState([]);
-  const [decryptedPackages, setDecryptedPackages] = useState([]);
+  const [decryptedStrings, setDecryptedStrings] = useState([]);
+  const [encryptedPackages, setEncryptedPackages] = useState([]);
 
   useEffect(async () => {
     const client = new LitJsSdk.LitNodeClient();
@@ -22,33 +22,20 @@ const LitProtocol = () => {
   // instead of storing the encrypted package in the state (which isjust for demonstration purposes)
   // the object would need to  be stored as a JSON on IPFS
   const handleEncrypt = async () => {
-    const copy = [...decryptedPackages];
-    const decryptedPackage = await encrypt(clearText);
-    copy.push(decryptedPackage);
-    setDecryptedPackages(copy);
+    setEncryptedPackages([...encryptedPackages, await encrypt(clearText)]);
   };
 
   const handleDecrypt = async () => {
-    console.log(decryptedPackages);
-    let encryptedMessages = [];
-    if (decryptedPackages.length > 0) {
-      for (let i = 0; i < decryptedPackages.length; i++) {
-        console.log("################");
-        console.log("################");
-        console.log("################");
-        console.log(decryptedPackages[i]);
-        encryptedMessages.push(
-          await decrypt(
-            decryptedPackages[i].encryptedString,
-            decryptedPackages[i].encryptedSymmetricKey
-          )
-        );
-      }
+    let tmp = [];
+    for (let i = 0; i < encryptedPackages.length; i++) {
+      const { decryptedString } = await decrypt(
+        encryptedPackages[i].encryptedString,
+        encryptedPackages[i].encryptedSymmetricKey
+      );
+      tmp.push(decryptedString);
     }
-    setDecrypted(encryptedMessages);
+    setDecryptedStrings(tmp);
   };
-
-  console.log(decryptedPackages);
 
   return (
     <div>
@@ -76,16 +63,14 @@ const LitProtocol = () => {
           value={clearText}
           onChange={(e) => setClearText(e.target.value)}
         />
+        <p>Number of encrypted messages: {encryptedPackages.length}</p>
         <button onClick={handleEncrypt}>Encrypt</button>
-        <p>Encrypted messages: {decryptedPackages.length}</p>
       </div>
       <div>
         <h2>Decrypted message:</h2>
         <button onClick={handleDecrypt}>Decrypt</button>
-
-        {decrypted.map((d) => (
-          <p>{d}</p>
-        ))}
+        {decryptedStrings.length > 0 &&
+          decryptedStrings.map((d, idx) => <p key={idx}>{d}</p>)}
       </div>
     </div>
   );
