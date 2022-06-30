@@ -7,6 +7,7 @@ import {
   vetoDelegateBadgeId,
 } from "../services/litProtocol";
 import badgerContract from "../contracts/badger";
+import Functions from "./Functions";
 
 const LitProtocol = () => {
   const [clearText, setClearText] = useState("");
@@ -78,6 +79,7 @@ const LitProtocol = () => {
         {decryptedStrings.length > 0 &&
           decryptedStrings.map((d, idx) => <p key={idx}>{d}</p>)}
       </div>
+      <Functions />
     </div>
   );
 };
