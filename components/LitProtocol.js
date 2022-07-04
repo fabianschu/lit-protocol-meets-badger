@@ -79,7 +79,6 @@ const LitProtocol = () => {
         {decryptedStrings.length > 0 &&
           decryptedStrings.map((d, idx) => <p key={idx}>{d}</p>)}
       </div>
-      <Functions />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { useState, useContext, useEffect } from "react";
-import LitJsSdk from "lit-js-sdk";
+
 import {
   encrypt,
   decrypt,
@@ -8,20 +8,18 @@ import {
   vetoDelegateBadgeId,
 } from "../services/litProtocol";
 import { Web3Context } from "../context/Web3Context";
-import badgerContract from "../contracts/badger";
+import testContract from "../contracts/testContract";
+import secretDelayArtifact from "../contracts/secretDelay";
+import rolesArtifact from "../contracts/roles";
+import { pinJson } from "../services/pinata";
+import { blobToBase64 } from "../lib/utilities";
 
-const Functions = () => {
-  const [fn, setFn] = useState("");
+const Functions = (props) => {
+  const { fn, setFn, status, setStatus } = props;
   const { state } = useContext(Web3Context);
   const { web3Provider, address } = state;
+  const { abi } = testContract;
 
-  useEffect(async () => {
-    const client = new LitJsSdk.LitNodeClient();
-    await client.connect();
-    window.litNodeClient = client;
-  }, []);
-
-  const { abi } = badgerContract;
   const writeFunctions = abi.filter(
     (fn) =>
       fn.stateMutability !== "view" &&
@@ -52,38 +50,47 @@ const Functions = () => {
     setFn(copyFn);
   };
 
-  const handleSubmit = async (e) => {
+  const handlePropose = async (e) => {
+    const signer = web3Provider.getSigner();
     // TODO: pull salt from delay
-    const salt = 11;
+
+    // assemble payload for enqueuing tx
+    const secretDelayInstance = new ethers.Contract(
+      secretDelayArtifact.address,
+      secretDelayArtifact.abi,
+      web3Provider
+    );
+
+    const salt = await secretDelayInstance.salt();
 
     // initialize contract
-    const instance = new ethers.Contract(
-      badgerContract.address,
-      badgerContract.abi,
+    const testContractInstance = new ethers.Contract(
+      testContract.address,
+      testContract.abi,
       web3Provider
     );
 
     // populate transaction
     const inputParams = fn.inputs.map((i) => i.value);
-    const popoulatedTransaction = await instance.populateTransaction[fn.name](
-      ...inputParams
-    );
+    const populatedTransaction = await testContractInstance.populateTransaction[
+      fn.name
+    ](...inputParams);
 
     // create hash for function proposal
     const hash = ethers.utils.solidityKeccak256(
       ["address", "uint256", "bytes", "uint8", "uint256"],
-      [popoulatedTransaction.to, 0, popoulatedTransaction.data, 0, salt]
+      [populatedTransaction.to, 0, populatedTransaction.data, 0, salt]
     );
 
     // assemble object for encryption
     const txDescription = {
-      targetContract: badgerContract.address,
+      targetContract: testContract.address,
       targetFunction: fn.name,
       inputParams: fn.inputs,
       hashParams: {
-        data: popoulatedTransaction.data,
+        data: populatedTransaction.data,
         salt,
-        to: popoulatedTransaction.to,
+        to: populatedTransaction.to,
         operation: 0,
         value: 0,
       },
@@ -95,6 +102,8 @@ const Functions = () => {
     encrypted.encryptedString = b64;
     const jsonString = JSON.stringify(encrypted);
 
+    const ipfsHash = await pinJson(jsonString);
+
     // decrypt (just for testing)
     const parsed = JSON.parse(jsonString);
     const blob = await fetch(parsed.encryptedString).then((res) => res.blob());
@@ -103,8 +112,31 @@ const Functions = () => {
       parsed.encryptedString,
       parsed.encryptedSymmetricKey
     );
-    console.log("decrypted: ", decrypted.decryptedString);
+
+    const payload =
+      await secretDelayInstance.populateTransaction.enqueueSecretTx(hash);
+
+    const rolesInstance = new ethers.Contract(
+      rolesArtifact.address,
+      rolesArtifact.abi,
+      web3Provider
+    );
+    setStatus("processing tx..");
+    const tx = await rolesInstance
+      .connect(signer)
+      .execTransactionFromModule(
+        secretDelayInstance.address,
+        0,
+        payload.data,
+        0,
+        monetaryDelegateBadgeId
+      );
+
+    await tx.wait();
+    setStatus("tx processed..");
   };
+
+  const handleExecute = (e) => {};
 
   return (
     <div>
@@ -141,7 +173,13 @@ const Functions = () => {
               </label>
             );
           })}
-          <button onClick={handleSubmit}>Submit</button>
+          <button onClick={handlePropose}>Propose tx</button>
+          <p>
+            <strong>{status}</strong>
+          </p>
+          {status === "tx processed.." && (
+            <button onClick={handleExecute}>Execute tx</button>
+          )}
         </div>
       )}
     </div>
