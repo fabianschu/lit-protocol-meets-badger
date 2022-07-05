@@ -48,12 +48,16 @@ export const encrypt = async (message) => {
   };
 };
 
-export const decrypt = async (encryptedString, encryptedSymmetricKey) => {
+export const decrypt = async (
+  encryptedString,
+  encryptedSymmetricKey,
+  authSig
+) => {
+  console.log(window);
   if (!window.litNodeClient) {
     await connectLit();
   }
 
-  const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
   const symmetricKey = await window.litNodeClient.getEncryptionKey({
     accessControlConditions,
     toDecrypt: encryptedSymmetricKey,

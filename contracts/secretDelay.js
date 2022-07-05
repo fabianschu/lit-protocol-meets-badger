@@ -1,5 +1,5 @@
 export default {
-  address: "0xE808c5E94558C7b1B8778128AbBa1A7a9deE1240",
+  address: "0xdCcbaA9888a770935dB468800f0F4Dec77Aa2ceE",
   abi: [
     {
       inputs: [
@@ -224,7 +224,13 @@ export default {
           type: "bytes32",
         },
         {
-          indexed: true,
+          indexed: false,
+          internalType: "string",
+          name: "uri",
+          type: "string",
+        },
+        {
+          indexed: false,
           internalType: "uint256",
           name: "salt",
           type: "uint256",
@@ -371,6 +377,11 @@ export default {
           internalType: "bytes32",
           name: "hashedTransaction",
           type: "bytes32",
+        },
+        {
+          internalType: "string",
+          name: "uri",
+          type: "string",
         },
       ],
       name: "enqueueSecretTx",

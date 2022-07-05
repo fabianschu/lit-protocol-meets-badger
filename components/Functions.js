@@ -15,7 +15,7 @@ import { pinJson } from "../services/pinata";
 import { blobToBase64 } from "../lib/utilities";
 
 const Functions = (props) => {
-  const { fn, setFn, status, setStatus } = props;
+  const { fn, setFn, status, setStatus, getTransactions } = props;
   const { state } = useContext(Web3Context);
   const { web3Provider, address } = state;
   const { abi } = testContract;
@@ -25,16 +25,6 @@ const Functions = (props) => {
       fn.stateMutability !== "view" &&
       !["constructor", "event", "error"].includes(fn.type)
   );
-
-  const blobToBase64 = (blob) => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
-      reader.onloadend = function () {
-        resolve(reader.result);
-      };
-    });
-  };
 
   const handleFunctionChange = (e) => {
     const fn = writeFunctions.find((f) => f.name === e.target.value);
@@ -100,28 +90,21 @@ const Functions = (props) => {
     const encrypted = await encrypt(JSON.stringify(txDescription));
     const b64 = await blobToBase64(encrypted.encryptedString);
     encrypted.encryptedString = b64;
-    const jsonString = JSON.stringify(encrypted);
 
-    const ipfsHash = await pinJson(jsonString);
-
-    // decrypt (just for testing)
-    const parsed = JSON.parse(jsonString);
-    const blob = await fetch(parsed.encryptedString).then((res) => res.blob());
-    parsed.encryptedString = blob;
-    const decrypted = await decrypt(
-      parsed.encryptedString,
-      parsed.encryptedSymmetricKey
-    );
+    const ipfsHash = await pinJson(encrypted);
 
     const payload =
-      await secretDelayInstance.populateTransaction.enqueueSecretTx(hash);
+      await secretDelayInstance.populateTransaction.enqueueSecretTx(
+        hash,
+        ipfsHash
+      );
 
     const rolesInstance = new ethers.Contract(
       rolesArtifact.address,
       rolesArtifact.abi,
       web3Provider
     );
-    setStatus("processing tx..");
+
     const tx = await rolesInstance
       .connect(signer)
       .execTransactionFromModule(
@@ -132,8 +115,10 @@ const Functions = (props) => {
         monetaryDelegateBadgeId
       );
 
+    setStatus(`waiting for blockchain, tx hash: ${tx.hash}`);
     await tx.wait();
     setStatus("tx processed..");
+    await getTransactions();
   };
 
   const handleExecute = (e) => {};
