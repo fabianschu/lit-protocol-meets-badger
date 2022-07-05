@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Balances from "../components/Balances";
 import Mint from "../components/Mint";
 import { useEffect, useContext } from "react";
+import Instructions from "../components/Instructions";
 
 export const Home = () => {
   const { state, dispatch, connect, disconnect } = useContext(Web3Context);
@@ -61,6 +62,7 @@ export const Home = () => {
     <div className="container">
       <main>
         <Header />
+        <Instructions />
         <Balances />
         <Mint />
         <Governance />
