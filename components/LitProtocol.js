@@ -7,6 +7,7 @@ import {
   vetoDelegateBadgeId,
 } from "../services/litProtocol";
 import badgerContract from "../contracts/badger";
+import Functions from "./Functions";
 
 const LitProtocol = () => {
   const [clearText, setClearText] = useState("");

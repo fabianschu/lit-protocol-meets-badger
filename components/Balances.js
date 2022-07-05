@@ -6,6 +6,7 @@ import badgerArtifact from "../contracts/badger";
 const Balances = () => {
   const [firstBalance, setFirstBalance] = useState(0);
   const [secondBalance, setSecondBalance] = useState(0);
+  const [thirdBalance, setThirdBalance] = useState(0);
 
   const { state } = useContext(Web3Context);
   const { web3Provider, address } = state;
@@ -19,22 +20,35 @@ const Balances = () => {
     if (address) {
       const b1 = await badger.balanceOf(address, 1);
       const b2 = await badger.balanceOf(address, 2);
+      const b3 = await badger.balanceOf(address, 3);
       setFirstBalance(b1.toString());
       setSecondBalance(b2.toString());
+      setThirdBalance(b3.toString());
     }
   }, [address]);
 
   return (
     <div>
       <h1>Token balances:</h1>
-      <div>
-        <span>Balance for tokenId = 1: </span>
-        <span>{firstBalance}</span>
-      </div>
-      <div>
-        <span>Balance for tokenId = 2: </span>
-        <span>{secondBalance}</span>
-      </div>
+      <table>
+        <tbody>
+          <tr>
+            <td>Balance for tokenId = 1 (Monetary Delegate Badges)</td>
+            <td>{firstBalance}</td>
+          </tr>
+          <tr>
+            <td>
+              Balance for tokenId = 2 (Monetary Multisig Members Badge / Veto
+              Delegate)
+            </td>
+            <td>{secondBalance}</td>
+          </tr>
+          <tr>
+            <td>Balance for tokenId = 3 (Random Badge)</td>
+            <td>{thirdBalance}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 };

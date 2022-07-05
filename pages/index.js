@@ -1,5 +1,5 @@
 import { Web3Context } from "../context/Web3Context";
-import LitProtocol from "../components/LitProtocol";
+import Governance from "../components/Governance";
 import Header from "../components/Header";
 import Balances from "../components/Balances";
 import Mint from "../components/Mint";
@@ -63,7 +63,7 @@ export const Home = () => {
         <Header />
         <Balances />
         <Mint />
-        <LitProtocol />
+        <Governance />
       </main>
     </div>
   );
