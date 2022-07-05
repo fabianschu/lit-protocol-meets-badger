@@ -15,8 +15,9 @@ const Instructions = () => {
         <a href="https://rinkeby.etherscan.io/address/0xE9a757A776F729d36191FC40f849Afc84a5cF4b3">
           Test Contract
         </a>
-        . Join this telegram channel to receive notifications about incoming
-        proposals: <a href="https://t.me/kolektivo_test_notif">Test Contract</a>
+        . Join this{" "}
+        <a href="https://t.me/kolektivo_test_notif">telegram channel</a> to
+        receive notifications about incoming proposals.
       </p>
       <p>
         If you hold a badge with tokenId = 1 and/or tokenId = 2, you can read
