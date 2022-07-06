@@ -9,7 +9,8 @@ import Transactions from "./Transactions";
 import secretDelayArtifact from "../contracts/secretDelay";
 import { verifyPayload } from "../lib/utilities";
 
-const Governance = () => {
+const Governance = (props) => {
+  const { mdBalance, vdBalance } = props;
   const [fn, setFn] = useState("");
   const [status, setStatus] = useState("");
   const [litAuth, setLitAuth] = useState();
@@ -117,6 +118,7 @@ const Governance = () => {
         setStatus={setStatus}
         transactions={transactions}
         getTransactions={getTransactions}
+        mdBalance={mdBalance}
       />
       <Transactions
         fn={fn}
@@ -126,6 +128,8 @@ const Governance = () => {
         litAuth={litAuth}
         transactions={transactions}
         getTransactions={getTransactions}
+        mdBalance={mdBalance}
+        vdBalance={vdBalance}
       />
     </div>
   );

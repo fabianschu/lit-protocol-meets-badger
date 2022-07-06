@@ -15,7 +15,7 @@ import { pinJson } from "../services/pinata";
 import { blobToBase64 } from "../lib/utilities";
 
 const Functions = (props) => {
-  const { fn, setFn, status, setStatus, getTransactions } = props;
+  const { fn, setFn, status, setStatus, getTransactions, mdBalance } = props;
   const { state } = useContext(Web3Context);
   const { web3Provider, address } = state;
   const { abi } = testContract;
@@ -126,46 +126,52 @@ const Functions = (props) => {
   return (
     <div>
       <h2>Functions:</h2>
-      <div>
-        <label>
-          Available Functions:{" "}
-          <select onChange={handleFunctionChange} value={fn.name}>
-            <option disabled={true} value="">
-              -- Choose function --
-            </option>
-            {writeFunctions.map((fn) => (
-              <option value={fn.name} key={fn.name}>
-                {fn.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+      {mdBalance > 0 ? (
+        <>
+          <div>
+            <label>
+              Available Functions:{" "}
+              <select onChange={handleFunctionChange} value={fn.name}>
+                <option disabled={true} value="">
+                  -- Choose function --
+                </option>
+                {writeFunctions.map((fn) => (
+                  <option value={fn.name} key={fn.name}>
+                    {fn.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
 
-      {fn && (
-        <div>
-          <h2>Inputs:</h2>
-          {fn.inputs.map((i, idx) => {
-            return (
-              <label key={idx}>
-                {i.name}:{" "}
-                <input
-                  onChange={handlePayloadChange}
-                  value={i.value}
-                  name={i.name}
-                />
-                <br />
-              </label>
-            );
-          })}
-          <button onClick={handlePropose}>Propose tx</button>
-          <p>
-            <strong>{status}</strong>
-          </p>
-          {status === "tx processed.." && (
-            <button onClick={handleExecute}>Execute tx</button>
+          {fn && (
+            <div>
+              <h2>Inputs:</h2>
+              {fn.inputs.map((i, idx) => {
+                return (
+                  <label key={idx}>
+                    {i.name}:{" "}
+                    <input
+                      onChange={handlePayloadChange}
+                      value={i.value}
+                      name={i.name}
+                    />
+                    <br />
+                  </label>
+                );
+              })}
+              <button onClick={handlePropose}>Propose tx</button>
+              <p>
+                <strong>{status}</strong>
+              </p>
+              {status === "tx processed.." && (
+                <button onClick={handleExecute}>Execute tx</button>
+              )}
+            </div>
           )}
-        </div>
+        </>
+      ) : (
+        <p>You don't hold a Monetary Delegate badge</p>
       )}
     </div>
   );

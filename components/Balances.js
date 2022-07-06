@@ -3,9 +3,8 @@ import { ethers, BigNumber } from "ethers";
 import { Web3Context } from "../context/Web3Context";
 import badgerArtifact from "../contracts/badger";
 
-const Balances = () => {
-  const [firstBalance, setFirstBalance] = useState(0);
-  const [secondBalance, setSecondBalance] = useState(0);
+const Balances = (props) => {
+  const { mdBalance, setMdBalance, vdBalance, setVdBalance } = props;
   const [thirdBalance, setThirdBalance] = useState(0);
 
   const { state } = useContext(Web3Context);
@@ -21,8 +20,8 @@ const Balances = () => {
       const b1 = await badger.balanceOf(address, 1);
       const b2 = await badger.balanceOf(address, 2);
       const b3 = await badger.balanceOf(address, 3);
-      setFirstBalance(b1.toString());
-      setSecondBalance(b2.toString());
+      setMdBalance(b1.toString());
+      setVdBalance(b2.toString());
       setThirdBalance(b3.toString());
     }
   }, [address]);
@@ -33,18 +32,17 @@ const Balances = () => {
       <table>
         <tbody>
           <tr>
-            <td>Balance for tokenId = 1 (Monetary Delegate Badges)</td>
-            <td>{firstBalance}</td>
+            <td>Monetary Delegate Badges (tokenId = 1)</td>
+            <td>{mdBalance}</td>
           </tr>
           <tr>
             <td>
-              Balance for tokenId = 2 (Monetary Multisig Members Badge / Veto
-              Delegate)
+              Monetary Multisig Members Badge / Veto Delegate (tokenId = 2)
             </td>
-            <td>{secondBalance}</td>
+            <td>{vdBalance}</td>
           </tr>
           <tr>
-            <td>Balance for tokenId = 3 (Random Badge)</td>
+            <td>Random badge (tokenId = 3)</td>
             <td>{thirdBalance}</td>
           </tr>
         </tbody>

@@ -18,6 +18,8 @@ const Transactions = (props) => {
     litAuth,
     transactions,
     getTransactions,
+    mdBalance,
+    vdBalance,
   } = props;
   const { state } = useContext(Web3Context);
   const { web3Provider } = state;
@@ -104,7 +106,7 @@ const Transactions = (props) => {
         <table>
           <thead>
             <tr>
-              <th>Outstanding</th>
+              <th>Enqueued</th>
               <th>Proposal Time</th>
               <th>Verified</th>
               <th>Function</th>
@@ -124,6 +126,7 @@ const Transactions = (props) => {
               } = t;
 
               const outstanding = txNonce < queueNonce;
+
               return (
                 <tr key={t.transactionHash}>
                   <td>{outstanding ? "✅" : "⛔️"}</td>
@@ -144,7 +147,7 @@ const Transactions = (props) => {
                   </td>
                   <td>
                     <button
-                      disabled={!verified || !outstanding}
+                      disabled={!verified || !outstanding || mdBalance == 0}
                       onClick={handleExecute}
                       name={t.transactionHash}
                     >
@@ -155,7 +158,7 @@ const Transactions = (props) => {
                     <button
                       onClick={handleVeto}
                       name={t.transactionHash}
-                      disabled={!outstanding}
+                      disabled={!outstanding || vdBalance == 0}
                     >
                       veto
                     </button>

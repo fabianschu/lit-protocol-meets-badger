@@ -3,10 +3,12 @@ import Governance from "../components/Governance";
 import Header from "../components/Header";
 import Balances from "../components/Balances";
 import Mint from "../components/Mint";
-import { useEffect, useContext } from "react";
+import { useEffect, useContext, useState } from "react";
 import Instructions from "../components/Instructions";
 
 export const Home = () => {
+  const [mdBalance, setMdBalance] = useState(0);
+  const [vdBalance, setVdBalance] = useState(0);
   const { state, dispatch, connect, disconnect } = useContext(Web3Context);
   const { provider, web3Provider, address, chainId, web3Modal } = state;
 
@@ -63,9 +65,14 @@ export const Home = () => {
       <main>
         <Header />
         <Instructions />
-        <Balances />
+        <Balances
+          mdBalance={mdBalance}
+          setMdBalance={setMdBalance}
+          vdBalance={vdBalance}
+          setVdBalance={setVdBalance}
+        />
         <Mint />
-        <Governance />
+        <Governance mdBalance={mdBalance} vdBalance={vdBalance} />
       </main>
     </div>
   );
