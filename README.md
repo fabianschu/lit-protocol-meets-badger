@@ -19,4 +19,7 @@ run locally: `yarn next dev`
 8. when a function has been executed you can check the associated Gnosis Safe's transaction history => you'll see that the Gnosis Safe executed the proposed function
 
 **Activity Diagram**
-Kolektivo Governance - Flow Proposing monetary transactions.jpg![grafik](https://user-images.githubusercontent.com/48454910/177721944-5b3d3408-0419-48aa-badb-5e7d16bda161.png)
+
+The following activity diagram depicts what is going on in the background, with one exception: everyone can visit the page, no matter if they hold a badge or not (concerns the very first steps of the activity diagram).
+
+[grafik](https://user-images.githubusercontent.com/48454910/177721944-5b3d3408-0419-48aa-badb-5e7d16bda161.png)
