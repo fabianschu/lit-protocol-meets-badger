@@ -17,3 +17,6 @@ run locally: `yarn next dev`
 6. with an MD badge you can propose transactions in the section "Functions" and execute them
 7. with an MMM badge you can veto transactions
 8. when a function has been executed you can check the associated Gnosis Safe's transaction history => you'll see that the Gnosis Safe executed the proposed function
+
+**Activity Diagram**
+Kolektivo Governance - Flow Proposing monetary transactions.jpg![grafik](https://user-images.githubusercontent.com/48454910/177721944-5b3d3408-0419-48aa-badb-5e7d16bda161.png)
