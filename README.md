@@ -22,4 +22,4 @@ run locally: `yarn next dev`
 
 The following activity diagram depicts what is going on in the background, with one exception: everyone can visit the page, no matter if they hold a badge or not (concerns the very first steps of the activity diagram).
 
-[grafik](https://user-images.githubusercontent.com/48454910/177721944-5b3d3408-0419-48aa-badb-5e7d16bda161.png)
+![grafik](https://user-images.githubusercontent.com/48454910/177721944-5b3d3408-0419-48aa-badb-5e7d16bda161.png)
