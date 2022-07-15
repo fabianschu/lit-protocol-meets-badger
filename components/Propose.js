@@ -1,20 +1,14 @@
 import { ethers } from "ethers";
-import { useState, useContext, useEffect } from "react";
-
-import {
-  encrypt,
-  decrypt,
-  monetaryDelegateBadgeId,
-  vetoDelegateBadgeId,
-} from "../services/litProtocol";
+import { useContext } from "react";
+import { encrypt, monetaryDelegateBadgeId } from "../services/litProtocol";
 import { Web3Context } from "../context/Web3Context";
 import testContract from "../contracts/testContract";
 import secretDelayArtifact from "../contracts/secretDelay";
-import rolesArtifact from "../contracts/roles";
+import bacArtifact from "../contracts/roles";
 import { pinJson } from "../services/pinata";
 import { blobToBase64 } from "../lib/utilities";
 
-const Functions = (props) => {
+const Propose = (props) => {
   const { fn, setFn, status, setStatus, getTransactions, mdBalance } = props;
   const { state } = useContext(Web3Context);
   const { web3Provider, address } = state;
@@ -42,37 +36,43 @@ const Functions = (props) => {
 
   const handlePropose = async (e) => {
     const signer = web3Provider.getSigner();
-    // TODO: pull salt from delay
 
-    // assemble payload for enqueuing tx
+    // get instance of Secret Delay
     const secretDelayInstance = new ethers.Contract(
       secretDelayArtifact.address,
       secretDelayArtifact.abi,
       web3Provider
     );
 
-    const salt = await secretDelayInstance.salt();
-
-    // initialize contract
+    // get instance of target contract (on which proposal is meant to be executed)
     const testContractInstance = new ethers.Contract(
       testContract.address,
       testContract.abi,
       web3Provider
     );
 
-    // populate transaction
+    // populate target transaction (= transaction that is being proposed or execution)
     const inputParams = fn.inputs.map((i) => i.value);
     const populatedTransaction = await testContractInstance.populateTransaction[
       fn.name
     ](...inputParams);
 
-    // create hash for function proposal
+    // get salt from Secret Delay
+    const salt = await secretDelayInstance.salt();
+
+    // create hash for target transaction
     const hash = ethers.utils.solidityKeccak256(
       ["address", "uint256", "bytes", "uint8", "uint256"],
-      [populatedTransaction.to, 0, populatedTransaction.data, 0, salt]
+      [
+        populatedTransaction.to,
+        0, // value = 0 (amount of ETH to be sent in transaction)
+        populatedTransaction.data,
+        0, // operation = 0 (= call)
+        salt,
+      ]
     );
 
-    // assemble object for encryption
+    // assemble object that describes the proposed transaction
     const txDescription = {
       targetContract: testContract.address,
       targetFunction: fn.name,
@@ -86,26 +86,32 @@ const Functions = (props) => {
       },
     };
 
-    // create json string that contains encrypted data
-    const encrypted = await encrypt(JSON.stringify(txDescription));
-    const b64 = await blobToBase64(encrypted.encryptedString);
-    encrypted.encryptedString = b64;
+    // encrypt the transaction description
+    const encrypted = await encrypt(JSON.stringify(txDescription)); // returns an object with the encrypted data
+    encrypted.encryptedString = await blobToBase64(encrypted.encryptedString); // the encrypted string needs to be converted from blob to base64 so that it can be stringified
 
+    // store encrypted transaction description on ipfs
     const ipfsHash = await pinJson(encrypted);
 
+    // populate the transaction through which the target transaction will be proposed
     const payload =
       await secretDelayInstance.populateTransaction.enqueueSecretTx(
-        hash,
-        ipfsHash
+        hash, // hash of target transaction
+        ipfsHash // ipfs hash that was returned when uploading the data
       );
 
-    const rolesInstance = new ethers.Contract(
-      rolesArtifact.address,
-      rolesArtifact.abi,
+    // get instance of BAC contract
+    const bacInstance = new ethers.Contract(
+      bacArtifact.address,
+      bacArtifact.abi,
       web3Provider
     );
 
-    const tx = await rolesInstance
+    // make transaction to BAC contract:
+    // the idea here is that this transaction goes to the BAC module
+    // ..which checks if the caller has permission to enqueue a proposal on the Secret Delay (via checking badge)
+    // ..then enqueues the proposal that is defined by the data parameter on the Secret Delay using the Safe as msg.sender
+    const tx = await bacInstance
       .connect(signer)
       .execTransactionFromModule(
         secretDelayInstance.address,
@@ -118,6 +124,8 @@ const Functions = (props) => {
     setStatus(`waiting for blockchain, tx hash: ${tx.hash}`);
     await tx.wait();
     setStatus("tx processed..");
+
+    // get updated list of proposals
     await getTransactions();
   };
 
@@ -125,7 +133,7 @@ const Functions = (props) => {
 
   return (
     <div>
-      <h2>Functions:</h2>
+      <h2>Propose:</h2>
       {mdBalance > 0 ? (
         <>
           <div>
@@ -177,4 +185,4 @@ const Functions = (props) => {
   );
 };
 
-export default Functions;
+export default Propose;

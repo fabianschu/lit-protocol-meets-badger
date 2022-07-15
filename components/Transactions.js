@@ -5,7 +5,7 @@ import { Web3Context } from "../context/Web3Context";
 import { vetoDelegateBadgeId } from "../services/litProtocol";
 import { ellipseAddress } from "../lib/utilities";
 import secretDelayArtifact from "../contracts/secretDelay";
-import rolesArtifact from "../contracts/roles";
+import bacArtifact from "../contracts/roles";
 
 const Transactions = (props) => {
   const [txNonce, setTxNonce] = useState();
@@ -36,24 +36,29 @@ const Transactions = (props) => {
   }, [litAuth]);
 
   const handleExecute = async (e) => {
+    // find transaction to be executed from list of available proposals
     const transaction = transactions.find(
       (t) => t.transactionHash === e.target.name
     );
+
+    // get transaction params for that transaction
     const txParams = transaction.ipfsContent.hashParams;
 
+    // get instance of Secret Delay
     const secretDelayInstance = new ethers.Contract(
       secretDelayArtifact.address,
       secretDelayArtifact.abi,
       await web3Provider.getSigner()
     );
 
+    // execute transaction by using the same transaction parameters that were used when transaction was proposed
     const tx = await secretDelayInstance.executeNextSecretTx(
       txParams.to,
       txParams.value,
       txParams.data,
       txParams.operation,
       txParams.salt,
-      { gasLimit: 200_000 }
+      { gasLimit: 200_000 } // solves some weirdness with metamask failing to correctly estimate gas, could require some more research
     );
 
     setStatus("waiting for blockchain, tx hash: ", tx.hash);
@@ -64,33 +69,46 @@ const Transactions = (props) => {
   };
 
   const handleVeto = async (e) => {
+    // find transaction to be vetoed from list of available proposals
     const transaction = transactions.find(
       (t) => t.transactionHash === e.target.name
     );
+
+    // get queueNonce of that transaction
     const queueNonce = transaction.queueNonce;
 
+    // get instance of SecretDelay contract
     const secretDelayInstance = new ethers.Contract(
       secretDelayArtifact.address,
       secretDelayArtifact.abi,
       await web3Provider.getSigner()
     );
-    const rolesInstance = new ethers.Contract(
-      rolesArtifact.address,
-      rolesArtifact.abi,
+
+    // get instance of BAC contract
+    const bacInstance = new ethers.Contract(
+      bacArtifact.address,
+      bacArtifact.abi,
       await web3Provider.getSigner()
     );
 
+    // get data parameter
+    // ..which encodes the function `setTxNonce` on the SecretDelay contract
+    // ..which is the function that is used for vetoing
     const { data } = await secretDelayInstance.populateTransaction.setTxNonce(
       queueNonce
     );
-    const tx = await rolesInstance.execTransactionFromModule(
+
+    // make the transaction to veto the proposal
+    // again goes via BAC to check if the caller has permission to veto proposals
+    const tx = await bacInstance.execTransactionFromModule(
       secretDelayInstance.address,
-      0,
+      0, // value
       data,
-      0,
+      0, //operation
       vetoDelegateBadgeId,
-      { gasLimit: 200_000 }
+      { gasLimit: 200_000 } // solves some weirdness with metamask failing to correctly estimate gas, could require some more research
     );
+
     setStatus(`waiting for blockchain, tx hash: ${tx.hash}`);
     await tx.wait();
     setStatus();
